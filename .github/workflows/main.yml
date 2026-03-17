@@ -1,8 +1,8 @@
-name: Update IPTV
+name: Update IPTV Stable
 
 on:
   schedule:
-    - cron: "*/30 * * * *"  # كل 30 دقيقة
+    - cron: "*/30 * * * *"
   workflow_dispatch:
 
 jobs:
@@ -13,14 +13,29 @@ jobs:
       - name: Clone repo
         uses: actions/checkout@v3
 
-      - name: Download M3U8
+      - name: Download M3U8 (Stable)
         run: |
-          curl "http://1gotv.org:8080/get.php?username=4640441086618762&password=4640441086618762&type=m3u_plus&output=m3u8" -o playlist.m3u8
+          rm -f playlist.m3u8
+
+          curl -L \
+            --retry 10 \
+            --retry-delay 5 \
+            --continue-at - \
+            --max-time 0 \
+            "http://1gotv.org:8080/get.php?username=4640441086618762&password=4640441086618762&type=m3u_plus&output=m3u8" \
+            -o playlist.m3u8
+
+      - name: Check file
+        run: |
+          if [ ! -s playlist.m3u8 ]; then
+            echo "❌ File empty!"
+            exit 1
+          fi
 
       - name: Commit & Push
         run: |
           git config --global user.name "iptv-bot"
           git config --global user.email "iptv@bot.com"
           git add playlist.m3u8
-          git commit -m "Update playlist" || echo "No changes"
+          git commit -m "Update IPTV" || echo "No changes"
           git push
