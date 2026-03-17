@@ -5,6 +5,9 @@ on:
     - cron: "*/30 * * * *"
   workflow_dispatch:
 
+permissions:
+  contents: write   # 🔥 هذا هو الحل
+
 jobs:
   update:
     runs-on: ubuntu-latest
@@ -13,7 +16,7 @@ jobs:
       - name: Clone repo
         uses: actions/checkout@v3
 
-      - name: Download M3U8 (Stable)
+      - name: Download M3U8
         run: |
           rm -f playlist.m3u8
 
@@ -21,16 +24,8 @@ jobs:
             --retry 10 \
             --retry-delay 5 \
             --continue-at - \
-            --max-time 0 \
             "http://1gotv.org:8080/get.php?username=4640441086618762&password=4640441086618762&type=m3u_plus&output=m3u8" \
             -o playlist.m3u8
-
-      - name: Check file
-        run: |
-          if [ ! -s playlist.m3u8 ]; then
-            echo "❌ File empty!"
-            exit 1
-          fi
 
       - name: Commit & Push
         run: |
